@@ -1,39 +1,50 @@
 # Windows IT Operations Toolkit v5.1.2
 
-A modular PowerShell-based **Advanced Technician Console** for Windows IT support, helpdesk troubleshooting, endpoint diagnostics, Active Directory support, Microsoft 365 support, security checks, reporting, and technician case documentation.
+A modular PowerShell-based **Advanced Technician Console** for Windows IT support, helpdesk troubleshooting, endpoint diagnostics, Active Directory support, Microsoft 365 support, security checks, reporting, battery diagnostics, and technician case documentation.
 
-The project remains fully CMD/PowerShell based. No web server, database, service, or standalone software installation is required for the core toolkit.
+The project remains fully **CMD / PowerShell based**. No web server, database, service, or standalone software installation is required for the core toolkit.
 
-## v5.1 Highlights
+---
 
-### Smart Diagnosis
-- Automated device health classification: Healthy / Warning / Critical
-- Memory pressure detection
-- Low disk-space detection
-- Pending reboot detection
-- Windows Update service checks
-- Internet and DNS fault differentiation
-- Defender protection checks
-- Event-log volume checks
-- Suggested technician next steps
+## Latest Release
 
-### Battery Health
+### v5.1.2 - Windows Security & PowerShell Compatibility Fixes
 
-- Design capacity
-- Full charge capacity
-- Current remaining capacity
-- Current charge percentage
-- Battery health percentage
-- Battery wear percentage
-- Cycle count where supported
-- Native Windows `powercfg /batteryreport`
-- Battery data included in the dashboard and HTML support report
+**Current Version: v5.1.2**
 
-Battery health is calculated as:
+Latest improvements include:
 
-```text
-Battery Health % = Full Charge Capacity / Design Capacity x 100
-```
+- Fixed Windows PowerShell 5.1 parser compatibility
+- Removed the problematic trailing comma in the module list
+- Improved launcher security behavior
+- Replaced `ExecutionPolicy Bypass` with a safer `RemoteSigned` launch method
+- Added `Prepare-Toolkit.cmd`
+- Added trusted-file preparation for downloaded toolkit files
+- Smart App Control is not disabled
+- Microsoft Defender and Windows Firewall remain enabled
+- Improved TCP port validation for PowerShell 5.1
+- Retained all v5.1 battery-health functionality
+- Retained battery integration in the dashboard and HTML report
+
+---
+
+## Version History
+
+| Version | Release Focus | Key Additions |
+|---|---|---|
+| **v5.1.2** | **Latest - Security & Compatibility Fixes** | PowerShell 5.1 parser fix, safer launcher, `Prepare-Toolkit.cmd`, Smart App Control handling, TCP port validation |
+| v5.1.1 | Battery Dashboard Fix | Fixed battery-health integration in Dashboard and HTML Report |
+| v5.1 | Battery Health Integration | Design capacity, full charge capacity, charge %, health %, wear %, cycle count, native battery report |
+| v5.0 | Advanced Technician Console | Smart Diagnosis, Wi-Fi tools, Windows Update diagnostics, user audit, BSOD analysis, case logging, system checks |
+| v4.2 | Dashboard & Reporting Improvements | Responsive tables, Event Log overflow fixes, improved HTML reporting |
+| v4.1 | Enhanced Dashboard | Device, network, security, process, and Event Log visibility improvements |
+| v4.0 | IT Operations Dashboard | Local HTML dashboard and reporting |
+| v3.0 | Microsoft 365 / Graph | Microsoft Graph user lookup, licensing, groups, tenant details |
+| v2.0 | Active Directory Support | User/computer lookup, account management, password reset, group membership |
+| v1.1 | Improved Endpoint Diagnostics | Better diagnostics, security checks, pending reboot detection, PowerShell 5.1 improvements |
+| v1.0 | Core Windows IT Support Toolkit | System health, network, hardware/software inventory, printers, services, Event Logs, repair tools |
+
+---
 
 ### Performance
 - Top RAM processes
