@@ -208,7 +208,7 @@ $css
 
 <div class="hero">
   <h1>Windows IT Support & Health Report</h1>
-  <p>$env:COMPUTERNAME &bull; Generated $(Get-Date -Format "yyyy-MM-dd HH:mm:ss") &bull; Toolkit v4.2</p>
+  <p>$env:COMPUTERNAME &bull; Generated $(Get-Date -Format "yyyy-MM-dd HH:mm:ss") &bull; Toolkit v5.0</p>
 </div>
 
 <div class="grid">
@@ -272,7 +272,7 @@ $css
 <div class="section"><h2>Installed Software</h2>$softwareHtml</div>
 
 <div class="footer">
-Generated locally by Windows IT Operations Toolkit v4.2. This is a point-in-time diagnostic snapshot.
+Generated locally by Windows IT Operations Toolkit v5.0. This is a point-in-time diagnostic snapshot.
 </div>
 
 </div>

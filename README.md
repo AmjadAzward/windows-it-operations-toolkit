@@ -1,106 +1,165 @@
-# Windows IT Operations Toolkit v4.2
+# Windows IT Operations Toolkit v5.0
 
-A portfolio-ready, modular PowerShell project for Windows helpdesk, desktop support, system administration, Active Directory support, Microsoft 365 support, diagnostics, reporting, and local IT operations dashboards.
+A modular PowerShell-based **Advanced Technician Console** for Windows IT support, helpdesk troubleshooting, endpoint diagnostics, Active Directory support, Microsoft 365 support, security checks, reporting, and technician case documentation.
 
-## Version Roadmap Included
+The project remains fully CMD/PowerShell based. No web server, database, service, or standalone software installation is required for the core toolkit.
 
-### v1.1 - Optimized Endpoint Diagnostics
-- Cleaner full diagnostic output
-- Top RAM and CPU processes
-- System health
-- Network diagnostics
-- Hardware and software inventory
-- Security health
-- BitLocker / firewall / Defender checks
-- Printer troubleshooting
+## v5.0 Highlights
+
+### Smart Diagnosis
+- Automated device health classification: Healthy / Warning / Critical
+- Memory pressure detection
+- Low disk-space detection
+- Pending reboot detection
+- Windows Update service checks
+- Internet and DNS fault differentiation
+- Defender protection checks
+- Event-log volume checks
+- Suggested technician next steps
+
+### Performance
+- Top RAM processes
+- Top accumulated CPU processes
+- System uptime
+- Disk usage
+- Memory usage
+
+### Network
+- Active adapter information
+- IPv4, gateway, and DNS
+- Internet reachability
+- DNS resolution
+- Wi-Fi interface diagnostics
+- Saved Wi-Fi profile listing
+- Remote TCP port tester
+- Local listening-port inventory
+
+### Windows Update
+- Windows Update service status
+- BITS status
+- Pending reboot detection
+- Recent installed updates
+- Last update-search time where available
+
+### Security & Users
+- Microsoft Defender status
+- Real-time protection
+- Firewall profile status
+- BitLocker status
+- Local users
+- Local administrators
+- Logged-on sessions
+- Failed logon events
+- Secure Boot
+- TPM
+- RDP status
+- Domain/workgroup information
+- WinHTTP proxy information
+- Time synchronization
+
+### Troubleshooting
+- Printer support
 - Service monitoring
-- SFC / DISM / DNS / Winsock tools
-- Compact event log analysis
-- HTML reporting
-- Logging
+- SFC
+- DISM ScanHealth
+- DISM RestoreHealth
+- DNS cache flush
+- Winsock reset
+- Crash / BSOD event analysis
+- Crash dump discovery
+- Startup-program audit
+- Event-log analyzer
 
-### v2.0 - Active Directory Support
-- Search users
+### Enterprise Support
+- Active Directory user/computer lookup
 - Group membership
-- Password / account expiry
-- Computer lookup
-- Unlock accounts
-- Enable / disable users
-- Password reset with forced change at next logon
-- Confirmation prompts for modifying actions
-
-Requires the ActiveDirectory PowerShell module / RSAT and appropriate domain permissions.
-
-### v3.0 - Microsoft 365 / Microsoft Graph
-- Graph authentication
-- User lookup
-- License details
+- Account/password expiry
+- Unlock account
+- Enable/disable account
+- Password reset
+- Microsoft Graph user lookup
+- Microsoft 365 license details
 - Group membership
 - Tenant organization summary
-- Starts with read-only Graph scopes
 
-Requires the Microsoft Graph PowerShell SDK and authorized Microsoft 365 access.
-
-### v4.2 - IT Operations Dashboard
-- Local HTML support report
-- Local dashboard
-- Memory and storage KPIs
-- Uptime
-- Top processes
-- service status
-- 24-hour critical/error event count
+### Reporting & Case Management
+- Enhanced HTML support report
+- Local HTML IT dashboard
+- Technician support case notes
+- Daily activity logging
+- Generated reports/logs/case notes excluded from Git by default
 
 ## Quick Start
 
-```powershell
-.\ITOpsToolkit.ps1
-```
-
-or run:
+Run:
 
 ```text
 Launch-Toolkit.bat
 ```
 
-Use **Run as administrator** only when you need repair or account-management features.
+Use **Run as administrator** when you need privileged troubleshooting, Security Event Log access, repair commands, or account-management functions.
 
-## Security Design
+## Main Menu
 
-- Read-only diagnostics are separated from modifying actions.
-- Privileged actions require Administrator checks where applicable.
-- Destructive/administrative operations require explicit confirmation.
-- Microsoft 365 integration begins with read-only Graph scopes.
-- No passwords, access tokens, tenant IDs, secrets, or credentials are stored in the repository.
-- Do not commit generated reports or logs from production machines.
+```text
+SMART DIAGNOSTICS
+ 1. Smart Health Diagnosis
+ 2. Run Full Diagnostic
+ 3. Performance / Top Processes
+ 4. Network Diagnostics
+ 5. Wi-Fi Diagnostics
+ 6. Windows Update Diagnostics
+ 7. Crash / BSOD Analyzer
+
+SYSTEM & SECURITY
+ 8. Hardware Inventory
+ 9. Software Inventory
+10. Security Health
+11. User / Local Admin Audit
+12. Startup Programs Audit
+13. Advanced System Checks
+14. Event Log Analyzer
+15. Port & Connection Tools
+
+SUPPORT & REMEDIATION
+16. Printer Support
+17. Service Monitoring
+18. Windows Repair Tools
+
+ENTERPRISE SUPPORT
+19. Active Directory Tools
+20. Microsoft 365 / Graph Tools
+
+REPORTING & CASE MANAGEMENT
+21. Generate HTML Support Report
+22. Generate IT Dashboard
+23. Technician Case Log
+24. Open Reports Folder
+25. Open Logs Folder
+26. Open Cases Folder
+```
+
+## Safety
+
+- Diagnostic functions are read-only wherever practical.
+- System-changing actions require explicit confirmation.
+- Administrative actions check for elevated privileges where appropriate.
+- Microsoft 365 integration starts with read-only Graph permissions.
+- Passwords, access tokens, recovery keys, and credentials are not written to reports or logs.
+- Do not commit production diagnostic output because it can contain device names, usernames, IP addresses, software inventory, and event details.
+
+## Requirements
+
+- Windows 10 / Windows 11
+- Windows PowerShell 5.1+
+- Administrator privileges for selected functions
+- RSAT / ActiveDirectory module for AD features
+- Microsoft Graph PowerShell SDK for Microsoft 365 features
 
 ## Portfolio Skills Demonstrated
 
-PowerShell, Windows 10/11 administration, helpdesk troubleshooting, system diagnostics, network troubleshooting, Windows security, Active Directory, Microsoft 365, Microsoft Graph, reporting, modular scripting, logging, Git, and GitHub documentation.
+PowerShell, Windows administration, IT support, helpdesk troubleshooting, networking, endpoint security, Active Directory, Microsoft 365, Microsoft Graph, incident documentation, event-log analysis, Git, GitHub, modular scripting, logging, reporting, and safe administrative automation.
 
 ## Disclaimer
 
-Use only on systems and directories you are authorized to administer. Test modifying actions in a lab or approved environment before production use.
-
-
-## v4.2 Dashboard Upgrade
-
-The dashboard now includes:
-
-- Device overview
-- Memory, disk, uptime and event health cards
-- Pending reboot status
-- Network health and DNS checks
-- Active adapter, IP, gateway and DNS
-- Microsoft Defender status
-- Real-time protection status
-- Defender signature version
-- Windows Firewall profile status
-- BitLocker status
-- Top RAM processes
-- Top CPU processes
-- Core Windows service status
-- Top event-error sources
-- Recent critical/error event details
-- Installed application count
-- Laptop battery status where available
-- Improved responsive layout and UTF-8 encoding
+Use only on systems you are authorized to support or administer. Test modifying actions in a lab or approved environment before production use.

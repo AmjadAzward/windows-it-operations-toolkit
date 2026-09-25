@@ -14,3 +14,6 @@ Added optional Microsoft 365 / Microsoft Graph read-only support.
 
 ## v4.0
 Added local HTML IT operations dashboard and consolidated the project into one portfolio-ready release.
+
+## v5.0
+Advanced Technician Console with smart diagnosis, Windows Update diagnostics, user/admin auditing, Wi-Fi diagnostics, port testing, crash analysis, startup audit, advanced system checks, and technician case logging.

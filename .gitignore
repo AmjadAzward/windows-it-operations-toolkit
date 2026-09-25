@@ -11,3 +11,6 @@ Desktop.ini
 !reports/.gitkeep
 !logs/.gitkeep
 !dashboard/.gitkeep
+
+cases/*.txt
+!cases/.gitkeep
