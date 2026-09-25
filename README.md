@@ -1,24 +1,24 @@
 # Windows IT Operations Toolkit v5.1
 
-A modular PowerShell-based **Advanced Technician Console** for Windows IT support, helpdesk troubleshooting, endpoint diagnostics, Active Directory support, Microsoft 365 support, security checks, reporting, and technician case documentation.
+A modular PowerShell-based **Advanced Technician Console** for Windows IT support, endpoint diagnostics, troubleshooting, Active Directory, Microsoft 365, security checks, reporting, and technician case documentation.
 
-The project remains fully CMD/PowerShell based. No web server, database, service, or standalone software installation is required for the core toolkit.
+The toolkit is fully **CMD / PowerShell based** and does not require a web server, database, or standalone application.
 
-## v5.1 Highlights
+---
 
-### Smart Diagnosis
-- Automated device health classification: Healthy / Warning / Critical
-- Memory pressure detection
-- Low disk-space detection
+## Key Features
+
+### Smart Diagnostics
+- Automated health status: Healthy / Warning / Critical
+- Memory and disk checks
 - Pending reboot detection
 - Windows Update service checks
-- Internet and DNS fault differentiation
-- Defender protection checks
-- Event-log volume checks
-- Suggested technician next steps
+- Internet and DNS diagnostics
+- Defender checks
+- Event Log error checks
+- Suggested technician actions
 
 ### Battery Health
-
 - Design capacity
 - Full charge capacity
 - Current remaining capacity
@@ -27,95 +27,77 @@ The project remains fully CMD/PowerShell based. No web server, database, service
 - Battery wear percentage
 - Cycle count where supported
 - Native Windows `powercfg /batteryreport`
-- Battery data included in the dashboard and HTML support report
+- Battery information included in dashboard and HTML report
 
-Battery health is calculated as:
+Battery health formula:
 
 ```text
 Battery Health % = Full Charge Capacity / Design Capacity x 100
 ```
 
 ### Performance
-- Top RAM processes
-- Top accumulated CPU processes
-- System uptime
-- Disk usage
 - Memory usage
+- Disk usage
+- System uptime
+- Top RAM processes
+- Top CPU processes
 
 ### Network
-- Active adapter information
-- IPv4, gateway, and DNS
-- Internet reachability
+- Active adapter details
+- IPv4 address
+- Gateway
+- DNS servers
+- Internet connectivity
 - DNS resolution
-- Wi-Fi interface diagnostics
-- Saved Wi-Fi profile listing
-- Remote TCP port tester
-- Local listening-port inventory
+- Wi-Fi diagnostics
+- Saved Wi-Fi profiles
+- TCP port testing
+- Local listening ports
 
-### Windows Update
-- Windows Update service status
-- BITS status
-- Pending reboot detection
-- Recent installed updates
-- Last update-search time where available
-
-### Security & Users
-- Microsoft Defender status
+### Security
+- Microsoft Defender
 - Real-time protection
-- Firewall profile status
-- BitLocker status
+- Windows Firewall
+- BitLocker
+- Secure Boot
+- TPM
+- RDP status
 - Local users
 - Local administrators
 - Logged-on sessions
 - Failed logon events
-- Secure Boot
-- TPM
-- RDP status
-- Domain/workgroup information
-- WinHTTP proxy information
-- Time synchronization
 
 ### Troubleshooting
 - Printer support
 - Service monitoring
+- Startup program audit
+- Event Log analysis
+- Crash / BSOD analysis
+- Crash dump detection
 - SFC
-- DISM ScanHealth
-- DISM RestoreHealth
-- DNS cache flush
+- DISM
+- DNS flush
 - Winsock reset
-- Crash / BSOD event analysis
-- Crash dump discovery
-- Startup-program audit
-- Event-log analyzer
 
 ### Enterprise Support
-- Active Directory user/computer lookup
+- Active Directory user and computer lookup
 - Group membership
-- Account/password expiry
-- Unlock account
-- Enable/disable account
+- Account and password expiry
+- Unlock accounts
+- Enable / disable accounts
 - Password reset
 - Microsoft Graph user lookup
 - Microsoft 365 license details
-- Group membership
-- Tenant organization summary
+- Tenant information
 
-### Reporting & Case Management
-- Enhanced HTML support report
-- Local HTML IT dashboard
-- Technician support case notes
+### Reporting
+- HTML support report
+- Local HTML dashboard
+- Battery health reporting
+- Technician case logging
 - Daily activity logging
-- Generated reports/logs/case notes excluded from Git by default
 
-## Quick Start
-
-Run:
-
-```text
-Launch-Toolkit.bat
-```
-
-Use **Run as administrator** when you need privileged troubleshooting, Security Event Log access, repair commands, or account-management functions.
+---
 
 ## Main Menu
 
@@ -141,44 +123,90 @@ SYSTEM & SECURITY
 16. Battery Health & Report
 
 SUPPORT & REMEDIATION
-16. Printer Support
-17. Service Monitoring
-18. Windows Repair Tools
+17. Printer Support
+18. Service Monitoring
+19. Windows Repair Tools
 
 ENTERPRISE SUPPORT
-19. Active Directory Tools
-20. Microsoft 365 / Graph Tools
+20. Active Directory Tools
+21. Microsoft 365 / Graph Tools
 
 REPORTING & CASE MANAGEMENT
-21. Generate HTML Support Report
-22. Generate IT Dashboard
-23. Technician Case Log
-24. Open Reports Folder
-25. Open Logs Folder
-26. Open Cases Folder
+22. Generate HTML Support Report
+23. Generate IT Dashboard
+24. Technician Case Log
+25. Open Reports Folder
+26. Open Logs Folder
+27. Open Cases Folder
+
+0. Exit
 ```
 
-## Safety
+---
 
-- Diagnostic functions are read-only wherever practical.
-- System-changing actions require explicit confirmation.
-- Administrative actions check for elevated privileges where appropriate.
-- Microsoft 365 integration starts with read-only Graph permissions.
-- Passwords, access tokens, recovery keys, and credentials are not written to reports or logs.
-- Do not commit production diagnostic output because it can contain device names, usernames, IP addresses, software inventory, and event details.
+## Quick Start
+
+Run:
+
+```text
+Launch-Toolkit.bat
+```
+
+or:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\ITOpsToolkit.ps1
+```
+
+Use **Run as administrator** for privileged troubleshooting, Security Event Log access, repair commands, and account-management functions.
+
+---
 
 ## Requirements
 
 - Windows 10 / Windows 11
 - Windows PowerShell 5.1+
 - Administrator privileges for selected functions
-- RSAT / ActiveDirectory module for AD features
+- RSAT / ActiveDirectory module for Active Directory features
 - Microsoft Graph PowerShell SDK for Microsoft 365 features
+
+---
+
+## Version History
+
+| Version | Main Focus |
+|---|---|
+| v1.0 | Core Windows IT support and diagnostics |
+| v1.1 | Improved endpoint diagnostics |
+| v2.0 | Active Directory support |
+| v3.0 | Microsoft 365 / Microsoft Graph |
+| v4.0 | Local IT Operations Dashboard |
+| v4.1 | Enhanced dashboard |
+| v4.2 | Dashboard and reporting improvements |
+| v5.0 | Advanced Technician Console |
+| v5.1 | Battery Health Integration |
+
+---
+
+## Safety
+
+- Diagnostic functions are read-only wherever practical.
+- System-changing actions require confirmation.
+- Administrative actions require appropriate privileges.
+- Microsoft 365 integration starts with read-only Graph permissions.
+- Passwords, access tokens, and recovery keys are not written to reports or logs.
+- Generated reports, logs, and case files should not be committed to public repositories.
+
+---
 
 ## Portfolio Skills Demonstrated
 
-PowerShell, Windows administration, IT support, helpdesk troubleshooting, networking, endpoint security, Active Directory, Microsoft 365, Microsoft Graph, incident documentation, event-log analysis, Git, GitHub, modular scripting, logging, reporting, and safe administrative automation.
+PowerShell, Windows administration, IT support, helpdesk troubleshooting, networking, endpoint security, Active Directory, Microsoft 365, Microsoft Graph, Windows Event Logs, battery diagnostics, Git, GitHub, modular scripting, logging, reporting, and safe administrative automation.
+
+---
 
 ## Disclaimer
 
-Use only on systems you are authorized to support or administer. Test modifying actions in a lab or approved environment before production use.
+Use only on systems you are authorized to inspect, support, or administer.
+
+Test system-changing actions in a lab or approved environment before production use.
