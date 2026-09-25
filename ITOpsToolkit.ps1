@@ -20,6 +20,7 @@ $moduleFiles = @(
     "EventLogs.psm1",
     "ActiveDirectoryTools.psm1",
     "Microsoft365Tools.psm1",
+    "BatteryHealth.psm1",
     "ReportGenerator.psm1",
     "Dashboard.psm1",
     "SmartDiagnosis.psm1",
@@ -31,7 +32,6 @@ $moduleFiles = @(
     "CrashTools.psm1",
     "SystemExtras.psm1",
     "CaseLogger.psm1",
-    "BatteryHealth.psm1"
 )
 
 foreach ($module in $moduleFiles) {
@@ -48,7 +48,7 @@ Initialize-Toolkit -ProjectRoot $ProjectRoot
 function Show-Header {
     Clear-Host
     Write-Host "================================================================" -ForegroundColor Cyan
-    Write-Host "        WINDOWS IT OPERATIONS TOOLKIT v5.1" -ForegroundColor White
+    Write-Host "        WINDOWS IT OPERATIONS TOOLKIT v5.1.1" -ForegroundColor White
     Write-Host "              ADVANCED TECHNICIAN CONSOLE" -ForegroundColor DarkGray
     Write-Host "================================================================" -ForegroundColor Cyan
     Write-Host " Computer : $env:COMPUTERNAME"

@@ -20,3 +20,6 @@ Advanced Technician Console with smart diagnosis, Windows Update diagnostics, us
 
 ## v5.1
 Added detailed battery health reporting, native Windows battery report generation, and battery health integration into the dashboard and HTML report.
+
+## v5.1.1
+Fixed Battery Health data not appearing in the HTML dashboard/report by ensuring BatteryHealth.psm1 is loaded before dependent reporting modules and explicitly importing the dependency inside those modules.
