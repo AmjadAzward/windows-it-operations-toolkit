@@ -66,6 +66,12 @@ function New-ITSupportReport {
         $bitlocker = [string]$bl.ProtectionStatus
     } catch {}
 
+    # Battery
+    $batteryData = $null
+    try {
+        $batteryData = Get-BatteryHealthData
+    } catch {}
+
     # Services
     $services = foreach ($name in @("wuauserv","BITS","Spooler","WinDefend","EventLog","Dhcp","Dnscache")) {
         $svc = Get-Service -Name $name -ErrorAction SilentlyContinue
@@ -208,7 +214,7 @@ $css
 
 <div class="hero">
   <h1>Windows IT Support & Health Report</h1>
-  <p>$env:COMPUTERNAME &bull; Generated $(Get-Date -Format "yyyy-MM-dd HH:mm:ss") &bull; Toolkit v5.0</p>
+  <p>$env:COMPUTERNAME &bull; Generated $(Get-Date -Format "yyyy-MM-dd HH:mm:ss") &bull; Toolkit v5.1</p>
 </div>
 
 <div class="grid">
@@ -219,6 +225,7 @@ $css
   <div class="card $netClass"><div class="k">Network</div><div class="v">$(if($internetOK -and $dnsOK){"Healthy"}else{"Issue"})</div><div class="s">Internet and DNS test</div></div>
   <div class="card $secClass"><div class="k">Endpoint Security</div><div class="v">$(if($defenderEnabled -and $realtimeEnabled){"Protected"}else{"Check"})</div><div class="s">Defender real-time status</div></div>
   <div class="card $rebootClass"><div class="k">Pending Reboot</div><div class="v">$(if($pendingReboot){"YES"}else{"NO"})</div><div class="s">Windows restart requirement</div></div>
+  <div class="card $(if($batteryData -and $batteryData.Present -and $null -ne $batteryData.HealthPercent){if($batteryData.HealthPercent -ge 80){"good"}elseif($batteryData.HealthPercent -ge 60){"warn"}else{"bad"}}else{"neutral"})"><div class="k">Battery Health</div><div class="v">$(if($batteryData -and $batteryData.Present -and $null -ne $batteryData.HealthPercent){"$($batteryData.HealthPercent)%"}else{"N/A"})</div><div class="s">Full charge vs design capacity</div></div>
 </div>
 
 <div class="section">
@@ -230,6 +237,20 @@ $css
   <div><div class="label">CPU</div><div class="value">$($cpu.Name)</div></div>
   <div><div class="label">Current User</div><div class="value">$env:USERNAME</div></div>
   <div><div class="label">Installed RAM</div><div class="value">$([math]::Round($cs.TotalPhysicalMemory/1GB,1)) GB</div></div>
+</div>
+</div>
+
+<div class="section">
+<h2>Battery Health Summary</h2>
+<div class="info">
+  <div><div class="label">Battery</div><div class="value">$(if($batteryData -and $batteryData.Present){$batteryData.Name}else{"No battery detected"})</div></div>
+  <div><div class="label">Design Capacity</div><div class="value">$(if($batteryData -and $batteryData.DesignCapacity_mWh){"$($batteryData.DesignCapacity_mWh) mWh"}else{"Unavailable"})</div></div>
+  <div><div class="label">Full Charge Capacity</div><div class="value">$(if($batteryData -and $batteryData.FullChargeCapacity_mWh){"$($batteryData.FullChargeCapacity_mWh) mWh"}else{"Unavailable"})</div></div>
+  <div><div class="label">Current Remaining Capacity</div><div class="value">$(if($batteryData -and $batteryData.RemainingCapacity_mWh){"$($batteryData.RemainingCapacity_mWh) mWh"}else{"Unavailable"})</div></div>
+  <div><div class="label">Current Charge</div><div class="value">$(if($batteryData -and $null -ne $batteryData.ChargePercent){"$($batteryData.ChargePercent)%"}else{"Unavailable"})</div></div>
+  <div><div class="label">Battery Health</div><div class="value">$(if($batteryData -and $null -ne $batteryData.HealthPercent){"$($batteryData.HealthPercent)%"}else{"Unavailable"})</div></div>
+  <div><div class="label">Battery Wear</div><div class="value">$(if($batteryData -and $null -ne $batteryData.WearPercent){"$($batteryData.WearPercent)%"}else{"Unavailable"})</div></div>
+  <div><div class="label">Cycle Count</div><div class="value">$(if($batteryData -and $null -ne $batteryData.CycleCount){$batteryData.CycleCount}else{"Unavailable"})</div></div>
 </div>
 </div>
 
@@ -272,7 +293,7 @@ $css
 <div class="section"><h2>Installed Software</h2>$softwareHtml</div>
 
 <div class="footer">
-Generated locally by Windows IT Operations Toolkit v5.0. This is a point-in-time diagnostic snapshot.
+Generated locally by Windows IT Operations Toolkit v5.1. This is a point-in-time diagnostic snapshot.
 </div>
 
 </div>

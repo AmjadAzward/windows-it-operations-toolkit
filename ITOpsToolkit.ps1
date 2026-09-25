@@ -30,7 +30,8 @@ $moduleFiles = @(
     "PortTools.psm1",
     "CrashTools.psm1",
     "SystemExtras.psm1",
-    "CaseLogger.psm1"
+    "CaseLogger.psm1",
+    "BatteryHealth.psm1"
 )
 
 foreach ($module in $moduleFiles) {
@@ -47,7 +48,7 @@ Initialize-Toolkit -ProjectRoot $ProjectRoot
 function Show-Header {
     Clear-Host
     Write-Host "================================================================" -ForegroundColor Cyan
-    Write-Host "        WINDOWS IT OPERATIONS TOOLKIT v5.0" -ForegroundColor White
+    Write-Host "        WINDOWS IT OPERATIONS TOOLKIT v5.1" -ForegroundColor White
     Write-Host "              ADVANCED TECHNICIAN CONSOLE" -ForegroundColor DarkGray
     Write-Host "================================================================" -ForegroundColor Cyan
     Write-Host " Computer : $env:COMPUTERNAME"
@@ -94,23 +95,24 @@ do {
     Write-Host "13. Advanced System Checks"
     Write-Host "14. Event Log Analyzer"
     Write-Host "15. Port & Connection Tools"
+    Write-Host "16. Battery Health & Report"
     Write-Host ""
     Write-Host "SUPPORT & REMEDIATION" -ForegroundColor Yellow
-    Write-Host "16. Printer Support"
-    Write-Host "17. Service Monitoring"
-    Write-Host "18. Windows Repair Tools"
+    Write-Host "17. Printer Support"
+    Write-Host "18. Service Monitoring"
+    Write-Host "19. Windows Repair Tools"
     Write-Host ""
     Write-Host "ENTERPRISE SUPPORT" -ForegroundColor Yellow
-    Write-Host "19. Active Directory Tools"
-    Write-Host "20. Microsoft 365 / Graph Tools"
+    Write-Host "20. Active Directory Tools"
+    Write-Host "21. Microsoft 365 / Graph Tools"
     Write-Host ""
     Write-Host "REPORTING & CASE MANAGEMENT" -ForegroundColor Yellow
-    Write-Host "21. Generate HTML Support Report"
-    Write-Host "22. Generate IT Dashboard"
-    Write-Host "23. Technician Case Log"
-    Write-Host "24. Open Reports Folder"
-    Write-Host "25. Open Logs Folder"
-    Write-Host "26. Open Cases Folder"
+    Write-Host "22. Generate HTML Support Report"
+    Write-Host "23. Generate IT Dashboard"
+    Write-Host "24. Technician Case Log"
+    Write-Host "25. Open Reports Folder"
+    Write-Host "26. Open Logs Folder"
+    Write-Host "27. Open Cases Folder"
     Write-Host " 0. Exit"
     Write-Host ""
 
@@ -156,12 +158,13 @@ do {
         "13" { Invoke-Safe { Show-Header; Get-SystemExtras } "Advanced System Checks"; Pause-Toolkit }
         "14" { Invoke-Safe { Show-Header; Get-RecentCriticalEvents -Hours 24 -MaxEvents 50 } "Event Log Analyzer"; Pause-Toolkit }
         "15" { Invoke-Safe { Show-PortToolsMenu } "Port Tools" }
-        "16" { Invoke-Safe { Show-PrinterSupportMenu } "Printer Support" }
-        "17" { Invoke-Safe { Show-ServiceToolsMenu } "Service Monitoring" }
-        "18" { Invoke-Safe { Show-WindowsRepairMenu } "Windows Repair" }
-        "19" { Invoke-Safe { Show-ActiveDirectoryMenu } "Active Directory Tools" }
-        "20" { Invoke-Safe { Show-Microsoft365Menu } "Microsoft 365 Tools" }
-        "21" {
+        "16" { Invoke-Safe { Show-BatteryMenu -ProjectRoot $ProjectRoot } "Battery Tools" }
+        "17" { Invoke-Safe { Show-PrinterSupportMenu } "Printer Support" }
+        "18" { Invoke-Safe { Show-ServiceToolsMenu } "Service Monitoring" }
+        "19" { Invoke-Safe { Show-WindowsRepairMenu } "Windows Repair" }
+        "20" { Invoke-Safe { Show-ActiveDirectoryMenu } "Active Directory Tools" }
+        "21" { Invoke-Safe { Show-Microsoft365Menu } "Microsoft 365 Tools" }
+        "22" {
             Invoke-Safe {
                 Show-Header
                 $report = New-ITSupportReport -ProjectRoot $ProjectRoot
@@ -170,7 +173,7 @@ do {
             } "HTML Support Report"
             Pause-Toolkit
         }
-        "22" {
+        "23" {
             Invoke-Safe {
                 Show-Header
                 $dash = New-ITDashboard -ProjectRoot $ProjectRoot
@@ -180,10 +183,10 @@ do {
             } "IT Dashboard"
             Pause-Toolkit
         }
-        "23" { Invoke-Safe { New-SupportCaseLog -ProjectRoot $ProjectRoot | Out-Null } "Case Log"; Pause-Toolkit }
-        "24" { Start-Process explorer.exe (Join-Path $ProjectRoot "reports") }
-        "25" { Start-Process explorer.exe (Join-Path $ProjectRoot "logs") }
-        "26" {
+        "24" { Invoke-Safe { New-SupportCaseLog -ProjectRoot $ProjectRoot | Out-Null } "Case Log"; Pause-Toolkit }
+        "25" { Start-Process explorer.exe (Join-Path $ProjectRoot "reports") }
+        "26" { Start-Process explorer.exe (Join-Path $ProjectRoot "logs") }
+        "27" {
             $cases = Join-Path $ProjectRoot "cases"
             if (-not (Test-Path $cases)) { New-Item -ItemType Directory -Path $cases | Out-Null }
             Start-Process explorer.exe $cases

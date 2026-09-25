@@ -17,3 +17,6 @@ Added local HTML IT operations dashboard and consolidated the project into one p
 
 ## v5.0
 Advanced Technician Console with smart diagnosis, Windows Update diagnostics, user/admin auditing, Wi-Fi diagnostics, port testing, crash analysis, startup audit, advanced system checks, and technician case logging.
+
+## v5.1
+Added detailed battery health reporting, native Windows battery report generation, and battery health integration into the dashboard and HTML report.
