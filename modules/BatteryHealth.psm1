@@ -1,218 +1,641 @@
+#Requires -Version 5.1
+
+function Get-BatteryReportFallbackData {
+    [CmdletBinding()]
+    param()
+
+    $result = [PSCustomObject]@{
+        DesignCapacity_mWh     = $null
+        FullChargeCapacity_mWh = $null
+        CycleCount             = $null
+    }
+
+    $tempReport = Join-Path $env:TEMP (
+        "ITOps_BatteryReport_{0}_{1}.html" -f `
+            $env:COMPUTERNAME,
+            (Get-Date -Format "yyyyMMddHHmmssfff")
+    )
+
+    try {
+        & powercfg.exe /batteryreport /output $tempReport | Out-Null
+
+        if (-not (Test-Path $tempReport)) {
+            return $result
+        }
+
+        $html = Get-Content `
+            -LiteralPath $tempReport `
+            -Raw `
+            -ErrorAction Stop
+
+        #
+        # DESIGN CAPACITY
+        #
+        if (
+            $html -match `
+            '(?is)DESIGN\s+CAPACITY.*?([\d,]+)\s*mWh'
+        ) {
+            $value = $matches[1] -replace ",", ""
+
+            $parsedValue = 0
+
+            if ([double]::TryParse($value, [ref]$parsedValue)) {
+                $result.DesignCapacity_mWh = $parsedValue
+            }
+        }
+
+        #
+        # FULL CHARGE CAPACITY
+        #
+        if (
+            $html -match `
+            '(?is)FULL\s+CHARGE\s+CAPACITY.*?([\d,]+)\s*mWh'
+        ) {
+            $value = $matches[1] -replace ",", ""
+
+            $parsedValue = 0
+
+            if ([double]::TryParse($value, [ref]$parsedValue)) {
+                $result.FullChargeCapacity_mWh = $parsedValue
+            }
+        }
+
+        #
+        # CYCLE COUNT
+        #
+        if (
+            $html -match `
+            '(?is)CYCLE\s+COUNT.*?(\d+)'
+        ) {
+            $parsedCycle = 0
+
+            if ([int]::TryParse($matches[1], [ref]$parsedCycle)) {
+                $result.CycleCount = $parsedCycle
+            }
+        }
+    }
+    catch {
+        # Do not stop the main toolkit if batteryreport parsing fails.
+    }
+    finally {
+        if (Test-Path $tempReport) {
+            Remove-Item `
+                -LiteralPath $tempReport `
+                -Force `
+                -ErrorAction SilentlyContinue
+        }
+    }
+
+    return $result
+}
+
+
 function Get-BatteryHealthData {
     [CmdletBinding()]
     param()
 
-    $battery = Get-CimInstance Win32_Battery -ErrorAction SilentlyContinue | Select-Object -First 1
+    $battery = Get-CimInstance `
+        -ClassName Win32_Battery `
+        -ErrorAction SilentlyContinue |
+        Select-Object -First 1
 
     if (-not $battery) {
         return [PSCustomObject]@{
-            Present                 = $false
-            Name                    = "No battery detected"
-            Manufacturer            = $null
-            Chemistry               = $null
-            DesignCapacity_mWh      = $null
-            FullChargeCapacity_mWh  = $null
-            RemainingCapacity_mWh   = $null
-            ChargePercent           = $null
-            HealthPercent           = $null
-            WearPercent             = $null
-            CycleCount              = $null
-            Status                  = $null
+            Present                = $false
+            Name                   = "No battery detected"
+            Manufacturer           = $null
+            Status                 = "N/A"
+            DesignCapacity_mWh     = $null
+            FullChargeCapacity_mWh = $null
+            RemainingCapacity_mWh  = $null
+            ChargePercent          = $null
+            HealthPercent          = $null
+            WearPercent            = $null
+            CycleCount             = $null
         }
     }
 
-    $designCapacity = $null
+    $designCapacity     = $null
     $fullChargeCapacity = $null
-    $remainingCapacity = $null
-    $cycleCount = $null
+    $remainingCapacity  = $null
+    $cycleCount         = $null
 
+    #
+    # DESIGN CAPACITY - WMI
+    #
     try {
-        $static = Get-CimInstance -Namespace root\wmi -ClassName BatteryStaticData -ErrorAction Stop |
+        $staticData = Get-CimInstance `
+            -Namespace "root\wmi" `
+            -ClassName "BatteryStaticData" `
+            -ErrorAction Stop |
             Select-Object -First 1
 
-        if ($static) {
-            $designCapacity = [double]$static.DesignedCapacity
+        if (
+            $staticData -and
+            $null -ne $staticData.DesignedCapacity -and
+            $staticData.DesignedCapacity -gt 0
+        ) {
+            $designCapacity = [double]$staticData.DesignedCapacity
         }
-    } catch {}
+    }
+    catch {
+        $designCapacity = $null
+    }
 
+    #
+    # FULL CHARGE CAPACITY - WMI
+    #
     try {
-        $full = Get-CimInstance -Namespace root\wmi -ClassName BatteryFullChargedCapacity -ErrorAction Stop |
+        $fullData = Get-CimInstance `
+            -Namespace "root\wmi" `
+            -ClassName "BatteryFullChargedCapacity" `
+            -ErrorAction Stop |
             Select-Object -First 1
 
-        if ($full) {
-            $fullChargeCapacity = [double]$full.FullChargedCapacity
+        if (
+            $fullData -and
+            $null -ne $fullData.FullChargedCapacity -and
+            $fullData.FullChargedCapacity -gt 0
+        ) {
+            $fullChargeCapacity =
+                [double]$fullData.FullChargedCapacity
         }
-    } catch {}
+    }
+    catch {
+        $fullChargeCapacity = $null
+    }
 
+    #
+    # CURRENT REMAINING CAPACITY - WMI
+    #
     try {
-        $status = Get-CimInstance -Namespace root\wmi -ClassName BatteryStatus -ErrorAction Stop |
-            Where-Object { $_.PowerOnline -ne $null } |
+        $statusData = Get-CimInstance `
+            -Namespace "root\wmi" `
+            -ClassName "BatteryStatus" `
+            -ErrorAction Stop |
             Select-Object -First 1
 
-        if ($status) {
-            $remainingCapacity = [double]$status.RemainingCapacity
+        if (
+            $statusData -and
+            $null -ne $statusData.RemainingCapacity
+        ) {
+            $remainingCapacity =
+                [double]$statusData.RemainingCapacity
         }
-    } catch {}
+    }
+    catch {
+        $remainingCapacity = $null
+    }
 
-    # Some systems expose cycle count through BatteryCycleCount.
+    #
+    # CYCLE COUNT - WMI
+    #
     try {
-        $cycle = Get-CimInstance -Namespace root\wmi -ClassName BatteryCycleCount -ErrorAction Stop |
+        $cycleData = Get-CimInstance `
+            -Namespace "root\wmi" `
+            -ClassName "BatteryCycleCount" `
+            -ErrorAction Stop |
             Select-Object -First 1
 
-        if ($cycle -and $null -ne $cycle.CycleCount) {
-            $cycleCount = [int]$cycle.CycleCount
+        if (
+            $cycleData -and
+            $null -ne $cycleData.CycleCount
+        ) {
+            $cycleCount = [int]$cycleData.CycleCount
         }
-    } catch {}
+    }
+    catch {
+        $cycleCount = $null
+    }
 
+    #
+    # FALLBACK:
+    # Use Windows powercfg battery report if WMI does not
+    # provide Design Capacity, Full Charge Capacity, or Cycle Count.
+    #
+    if (
+        $null -eq $designCapacity -or
+        $null -eq $fullChargeCapacity -or
+        $null -eq $cycleCount
+    ) {
+        try {
+            $fallbackData = Get-BatteryReportFallbackData
+
+            if (
+                $null -eq $designCapacity -and
+                $null -ne $fallbackData.DesignCapacity_mWh
+            ) {
+                $designCapacity =
+                    [double]$fallbackData.DesignCapacity_mWh
+            }
+
+            if (
+                $null -eq $fullChargeCapacity -and
+                $null -ne $fallbackData.FullChargeCapacity_mWh
+            ) {
+                $fullChargeCapacity =
+                    [double]$fallbackData.FullChargeCapacity_mWh
+            }
+
+            if (
+                $null -eq $cycleCount -and
+                $null -ne $fallbackData.CycleCount
+            ) {
+                $cycleCount =
+                    [int]$fallbackData.CycleCount
+            }
+        }
+        catch {
+            # Continue without fallback values.
+        }
+    }
+
+    #
+    # CURRENT CHARGE %
+    #
     $chargePercent = $null
-    if ($fullChargeCapacity -and $remainingCapacity -and $fullChargeCapacity -gt 0) {
-        $chargePercent = [math]::Round(($remainingCapacity / $fullChargeCapacity) * 100, 1)
-    } elseif ($null -ne $battery.EstimatedChargeRemaining) {
-        $chargePercent = [double]$battery.EstimatedChargeRemaining
+
+    if (
+        $null -ne $remainingCapacity -and
+        $null -ne $fullChargeCapacity -and
+        $fullChargeCapacity -gt 0
+    ) {
+        $chargePercent = [math]::Round(
+            ($remainingCapacity / $fullChargeCapacity) * 100,
+            1
+        )
+    }
+    elseif ($null -ne $battery.EstimatedChargeRemaining) {
+        $chargePercent =
+            [double]$battery.EstimatedChargeRemaining
     }
 
+    #
+    # BATTERY HEALTH %
+    #
     $healthPercent = $null
-    $wearPercent = $null
+    $wearPercent   = $null
 
-    if ($designCapacity -and $fullChargeCapacity -and $designCapacity -gt 0) {
-        $healthPercent = [math]::Round(($fullChargeCapacity / $designCapacity) * 100, 1)
-        $wearPercent = [math]::Round(100 - $healthPercent, 1)
+    if (
+        $null -ne $designCapacity -and
+        $null -ne $fullChargeCapacity -and
+        $designCapacity -gt 0
+    ) {
+        $healthPercent = [math]::Round(
+            ($fullChargeCapacity / $designCapacity) * 100,
+            1
+        )
+
+        #
+        # Prevent unusual firmware values from creating
+        # a negative wear figure.
+        #
+        if ($healthPercent -gt 100) {
+            $wearPercent = 0
+        }
+        else {
+            $wearPercent = [math]::Round(
+                100 - $healthPercent,
+                1
+            )
+        }
     }
 
-    [PSCustomObject]@{
-        Present                 = $true
-        Name                    = $battery.Name
-        Manufacturer            = $battery.Manufacturer
-        Chemistry               = $battery.Chemistry
-        DesignCapacity_mWh      = if ($designCapacity) {[math]::Round($designCapacity,0)} else {$null}
-        FullChargeCapacity_mWh  = if ($fullChargeCapacity) {[math]::Round($fullChargeCapacity,0)} else {$null}
-        RemainingCapacity_mWh   = if ($remainingCapacity) {[math]::Round($remainingCapacity,0)} else {$null}
-        ChargePercent           = $chargePercent
-        HealthPercent           = $healthPercent
-        WearPercent             = $wearPercent
-        CycleCount              = $cycleCount
-        Status                  = $battery.Status
+    #
+    # MANUFACTURER
+    #
+    $manufacturer = $null
+
+    if ($battery.Manufacturer) {
+        $manufacturer = $battery.Manufacturer
+    }
+
+    return [PSCustomObject]@{
+        Present                = $true
+        Name                   = $battery.Name
+        Manufacturer           = $manufacturer
+        Status                 = $battery.Status
+        DesignCapacity_mWh     = $designCapacity
+        FullChargeCapacity_mWh = $fullChargeCapacity
+        RemainingCapacity_mWh  = $remainingCapacity
+        ChargePercent          = $chargePercent
+        HealthPercent          = $healthPercent
+        WearPercent            = $wearPercent
+        CycleCount             = $cycleCount
     }
 }
+
 
 function Show-BatteryHealthReport {
     [CmdletBinding()]
     param()
 
     Clear-Host
-    Write-Host "BATTERY HEALTH REPORT" -ForegroundColor Cyan
-    Write-Host "====================="
 
-    $data = Get-BatteryHealthData
+    Write-Host "============================================================" `
+        -ForegroundColor Cyan
 
-    if (-not $data.Present) {
-        Write-StatusLine -Status "INFO" -Label "Battery" -Value "No battery detected"
+    Write-Host " BATTERY HEALTH REPORT" `
+        -ForegroundColor White
+
+    Write-Host "============================================================" `
+        -ForegroundColor Cyan
+
+    Write-Host ""
+
+    Write-Host "Collecting battery information..." `
+        -ForegroundColor DarkGray
+
+    Write-Host ""
+
+    $battery = Get-BatteryHealthData
+
+    if (-not $battery.Present) {
+        Write-Host `
+            "No battery detected on this computer." `
+            -ForegroundColor Yellow
+
         return
     }
 
-    Write-StatusLine -Status "INFO" -Label "Battery Name" -Value "$($data.Name)"
+    Write-Host (
+        "Battery Name               : {0}" `
+        -f $battery.Name
+    )
 
-    if ($data.DesignCapacity_mWh) {
-        Write-StatusLine -Status "INFO" -Label "Design Capacity" -Value "$($data.DesignCapacity_mWh) mWh"
-    } else {
-        Write-StatusLine -Status "WARN" -Label "Design Capacity" -Value "Unavailable"
+    if ($battery.Manufacturer) {
+        Write-Host (
+            "Manufacturer             : {0}" `
+            -f $battery.Manufacturer
+        )
     }
 
-    if ($data.FullChargeCapacity_mWh) {
-        Write-StatusLine -Status "INFO" -Label "Full Charge Capacity" -Value "$($data.FullChargeCapacity_mWh) mWh"
-    } else {
-        Write-StatusLine -Status "WARN" -Label "Full Charge Capacity" -Value "Unavailable"
+    Write-Host (
+        "Battery Status             : {0}" `
+        -f $battery.Status
+    )
+
+    if ($null -ne $battery.DesignCapacity_mWh) {
+        Write-Host (
+            "Design Capacity            : {0:N0} mWh" `
+            -f $battery.DesignCapacity_mWh
+        )
+    }
+    else {
+        Write-Host `
+            "Design Capacity            : Unavailable" `
+            -ForegroundColor Yellow
     }
 
-    if ($data.RemainingCapacity_mWh) {
-        Write-StatusLine -Status "INFO" -Label "Current Remaining Capacity" -Value "$($data.RemainingCapacity_mWh) mWh"
-    } else {
-        Write-StatusLine -Status "WARN" -Label "Current Remaining Capacity" -Value "Unavailable"
+    if ($null -ne $battery.FullChargeCapacity_mWh) {
+        Write-Host (
+            "Full Charge Capacity       : {0:N0} mWh" `
+            -f $battery.FullChargeCapacity_mWh
+        )
+    }
+    else {
+        Write-Host `
+            "Full Charge Capacity       : Unavailable" `
+            -ForegroundColor Yellow
     }
 
-    if ($null -ne $data.ChargePercent) {
-        $chargeState = if ($data.ChargePercent -ge 40) {"PASS"} elseif ($data.ChargePercent -ge 20) {"WARN"} else {"FAIL"}
-        Write-StatusLine -Status $chargeState -Label "Current Charge" -Value "$($data.ChargePercent)%"
+    if ($null -ne $battery.RemainingCapacity_mWh) {
+        Write-Host (
+            "Current Remaining Capacity : {0:N0} mWh" `
+            -f $battery.RemainingCapacity_mWh
+        )
+    }
+    else {
+        Write-Host `
+            "Current Remaining Capacity : Unavailable"
     }
 
-    if ($null -ne $data.HealthPercent) {
-        $healthState = if ($data.HealthPercent -ge 80) {"PASS"} elseif ($data.HealthPercent -ge 60) {"WARN"} else {"FAIL"}
-        Write-StatusLine -Status $healthState -Label "Battery Health" -Value "$($data.HealthPercent)%"
-        Write-StatusLine -Status "INFO" -Label "Battery Wear" -Value "$($data.WearPercent)%"
-    } else {
-        Write-StatusLine -Status "WARN" -Label "Battery Health" -Value "Unavailable"
+    if ($null -ne $battery.ChargePercent) {
+
+        if ($battery.ChargePercent -ge 40) {
+            $chargeColor = "Green"
+        }
+        elseif ($battery.ChargePercent -ge 20) {
+            $chargeColor = "Yellow"
+        }
+        else {
+            $chargeColor = "Red"
+        }
+
+        Write-Host (
+            "Current Charge             : {0:N1}%" `
+            -f $battery.ChargePercent
+        ) -ForegroundColor $chargeColor
+    }
+    else {
+        Write-Host `
+            "Current Charge             : Unavailable"
     }
 
-    if ($null -ne $data.CycleCount) {
-        Write-StatusLine -Status "INFO" -Label "Cycle Count" -Value "$($data.CycleCount)"
-    } else {
-        Write-StatusLine -Status "INFO" -Label "Cycle Count" -Value "Unavailable on this device"
+    if ($null -ne $battery.HealthPercent) {
+
+        if ($battery.HealthPercent -ge 80) {
+            $healthColor = "Green"
+            $healthStatus = "GOOD"
+        }
+        elseif ($battery.HealthPercent -ge 60) {
+            $healthColor = "Yellow"
+            $healthStatus = "FAIR"
+        }
+        else {
+            $healthColor = "Red"
+            $healthStatus = "POOR"
+        }
+
+        Write-Host (
+            "Battery Health             : {0:N1}% ({1})" `
+            -f $battery.HealthPercent,
+               $healthStatus
+        ) -ForegroundColor $healthColor
+
+        Write-Host (
+            "Battery Wear               : {0:N1}%" `
+            -f $battery.WearPercent
+        )
+    }
+    else {
+        Write-Host `
+            "Battery Health             : Unavailable" `
+            -ForegroundColor Yellow
+
+        Write-Host `
+            "Battery Wear               : Unavailable"
+    }
+
+    if ($null -ne $battery.CycleCount) {
+        Write-Host (
+            "Cycle Count                : {0}" `
+            -f $battery.CycleCount
+        )
+    }
+    else {
+        Write-Host `
+            "Cycle Count                : Unavailable"
     }
 
     Write-Host ""
-    Write-Host "Battery Health Formula:" -ForegroundColor White
-    Write-Host "Full Charge Capacity / Design Capacity x 100" -ForegroundColor DarkGray
+    Write-Host "Battery Health Formula:" `
+        -ForegroundColor Cyan
 
-    return $data
+    Write-Host `
+        "Full Charge Capacity / Design Capacity x 100"
+
+    Write-Host ""
 }
+
 
 function Export-WindowsBatteryReport {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory = $true)]
         [string]$ProjectRoot
     )
 
-    $reports = Join-Path $ProjectRoot "reports"
-    if (-not (Test-Path $reports)) {
-        New-Item -ItemType Directory -Path $reports | Out-Null
+    $reportsFolder = Join-Path `
+        $ProjectRoot `
+        "reports"
+
+    if (-not (Test-Path $reportsFolder)) {
+        New-Item `
+            -Path $reportsFolder `
+            -ItemType Directory `
+            -Force |
+            Out-Null
     }
 
-    $output = Join-Path $reports ("{0}_WindowsBatteryReport_{1}.html" -f $env:COMPUTERNAME,(Get-Date -Format "yyyyMMdd_HHmmss"))
+    $fileName = "{0}_BatteryReport_{1}.html" -f `
+        $env:COMPUTERNAME,
+        (Get-Date -Format "yyyyMMdd_HHmmss")
+
+    $reportPath = Join-Path `
+        $reportsFolder `
+        $fileName
+
+    Write-Host ""
+    Write-Host `
+        "Generating Windows battery report..." `
+        -ForegroundColor Cyan
 
     try {
-        & powercfg.exe /batteryreport /output $output | Out-Null
+        & powercfg.exe `
+            /batteryreport `
+            /output $reportPath |
+            Out-Null
+    }
+    catch {
+        Write-Host ""
+        Write-Host (
+            "Battery report generation failed: {0}" `
+            -f $_.Exception.Message
+        ) -ForegroundColor Red
 
-        if (Test-Path $output) {
-            Write-Host "Windows battery report created:" -ForegroundColor Green
-            Write-Host $output
-            Write-ToolkitLog "Windows battery report generated: $output" "INFO"
-            return $output
+        return
+    }
+
+    if (Test-Path $reportPath) {
+        Write-Host ""
+        Write-Host `
+            "Battery report created successfully:" `
+            -ForegroundColor Green
+
+        Write-Host $reportPath
+        Write-Host ""
+
+        $open = Read-Host `
+            "Open the report now? [Y/N]"
+
+        if ($open -match "^[Yy]$") {
+            Start-Process $reportPath
         }
 
-        throw "Battery report was not generated."
-    } catch {
-        Write-Host "Unable to generate Windows battery report: $($_.Exception.Message)" -ForegroundColor Red
+        return $reportPath
+    }
+    else {
+        Write-Host `
+            "Battery report could not be generated." `
+            -ForegroundColor Red
     }
 }
 
+
 function Show-BatteryMenu {
+    [CmdletBinding()]
     param(
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory = $true)]
         [string]$ProjectRoot
     )
 
     do {
         Clear-Host
-        Write-Host "BATTERY TOOLS" -ForegroundColor Cyan
-        Write-Host "============="
+
+        Write-Host `
+            "============================================================" `
+            -ForegroundColor Cyan
+
+        Write-Host `
+            " BATTERY HEALTH & REPORT" `
+            -ForegroundColor White
+
+        Write-Host `
+            "============================================================" `
+            -ForegroundColor Cyan
+
+        Write-Host ""
         Write-Host "1. Battery Health Summary"
-        Write-Host "2. Generate Native Windows Battery Report"
+        Write-Host "2. Generate Windows Battery Report"
         Write-Host "0. Back"
+        Write-Host ""
 
-        $choice = Read-Host "Select"
+        $batteryChoice = Read-Host `
+            "Select an option"
 
-        switch ($choice) {
+        switch ($batteryChoice) {
+
             "1" {
-                Show-BatteryHealthReport | Out-Null
-                Read-Host "Press ENTER"
+                Show-BatteryHealthReport
+
+                Write-Host ""
+
+                Read-Host `
+                    "Press ENTER to continue"
             }
+
             "2" {
-                Export-WindowsBatteryReport -ProjectRoot $ProjectRoot | Out-Null
-                Read-Host "Press ENTER"
+                Export-WindowsBatteryReport `
+                    -ProjectRoot $ProjectRoot |
+                    Out-Null
+
+                Write-Host ""
+
+                Read-Host `
+                    "Press ENTER to continue"
+            }
+
+            "0" {
+                # Return to main menu.
+            }
+
+            default {
+                Write-Host `
+                    "Invalid selection." `
+                    -ForegroundColor Red
+
+                Start-Sleep -Seconds 1
             }
         }
-    } while ($choice -ne "0")
+
+    } while ($batteryChoice -ne "0")
 }
 
-Export-ModuleMember -Function *
+
+Export-ModuleMember -Function `
+    Get-BatteryReportFallbackData, `
+    Get-BatteryHealthData, `
+    Show-BatteryHealthReport, `
+    Export-WindowsBatteryReport, `
+    Show-BatteryMenu
