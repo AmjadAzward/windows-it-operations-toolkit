@@ -31,7 +31,7 @@ $moduleFiles = @(
     "PortTools.psm1",
     "CrashTools.psm1",
     "SystemExtras.psm1",
-    "CaseLogger.psm1",
+    "CaseLogger.psm1"
 )
 
 foreach ($module in $moduleFiles) {
