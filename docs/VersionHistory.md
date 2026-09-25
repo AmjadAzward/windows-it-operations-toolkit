@@ -23,3 +23,11 @@ Added detailed battery health reporting, native Windows battery report generatio
 
 ## v5.1.1
 Fixed Battery Health data not appearing in the HTML dashboard/report by ensuring BatteryHealth.psm1 is loaded before dependent reporting modules and explicitly importing the dependency inside those modules.
+
+
+## v5.1.2
+- Fixed Windows PowerShell 5.1 parser error caused by a trailing comma in the module list.
+- Replaced the launcher execution-policy bypass with a safer RemoteSigned process policy.
+- Added `Prepare-Toolkit.cmd` to explicitly remove downloaded-file zone markers only after user confirmation.
+- The preparation utility does not disable Smart App Control, Defender, or Windows security features.
+- Fixed TCP port parsing for Windows PowerShell 5.1 compatibility.

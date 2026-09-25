@@ -5,7 +5,8 @@ function Test-PortInteractive {
     $hostName = Read-Host "Host or IP"
     $port = Read-Host "TCP Port"
 
-    if (-not [int]::TryParse($port, [ref]$null)) {
+    $parsedPort = 0
+    if (-not [int]::TryParse($port, [ref]$parsedPort)) {
         Write-Host "Invalid port number." -ForegroundColor Red
         return
     }

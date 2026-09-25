@@ -48,7 +48,7 @@ Initialize-Toolkit -ProjectRoot $ProjectRoot
 function Show-Header {
     Clear-Host
     Write-Host "================================================================" -ForegroundColor Cyan
-    Write-Host "        WINDOWS IT OPERATIONS TOOLKIT v5.1.1" -ForegroundColor White
+    Write-Host "        WINDOWS IT OPERATIONS TOOLKIT v5.1.2" -ForegroundColor White
     Write-Host "              ADVANCED TECHNICIAN CONSOLE" -ForegroundColor DarkGray
     Write-Host "================================================================" -ForegroundColor Cyan
     Write-Host " Computer : $env:COMPUTERNAME"
