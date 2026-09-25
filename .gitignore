@@ -1,0 +1,13 @@
+reports/*.html
+reports/*.csv
+reports/*.txt
+logs/*.log
+dashboard/*.html
+*.tmp
+*.temp
+*.clixml
+Thumbs.db
+Desktop.ini
+!reports/.gitkeep
+!logs/.gitkeep
+!dashboard/.gitkeep
