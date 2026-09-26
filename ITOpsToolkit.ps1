@@ -311,7 +311,7 @@ do {
     Write-Host " 1. Smart Health Diagnosis"
     Write-Host " 2. Run Full Diagnostic"
     Write-Host " 3. Performance / Top Processes"
-    Write-Host " 4. Network Diagnostics"
+    Write-Host " 4. Network Diagnostics & Repair"
     Write-Host " 5. Wi-Fi Diagnostics"
     Write-Host " 6. Windows Update Diagnostics"
     Write-Host " 7. Crash / BSOD Analyzer"
@@ -468,14 +468,9 @@ do {
 
             Invoke-Safe {
 
-                Show-Header
+                Show-NetworkToolsMenu
 
-                Get-NetworkDiagnostics `
-                    -Detailed
-
-            } "Network Diagnostics"
-
-            Pause-Toolkit
+            } "Network Diagnostics & Repair"
         }
 
 
